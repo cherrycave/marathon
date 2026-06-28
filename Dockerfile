@@ -9,7 +9,6 @@ WORKDIR $APP_HOME
 COPY --chown=gradle:gradle build.gradle.kts $APP_HOME/
 COPY --chown=gradle:gradle settings.gradle.kts $APP_HOME/
 COPY --chown=gradle:gradle src $APP_HOME/src
-COPY --chown=gradle:gradle worlds $APP_HOME/worlds
 
 RUN gradle --no-daemon build
 
