@@ -49,7 +49,7 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
     }
 
     fun getBlocksBelow(position: Pos): List<Pos> {
-        val offset = 0.3
+        val offset = 0.5
 
         return listOf(
             position,
@@ -57,12 +57,38 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
             position.add(-offset, -0.5, 0.0),
             position.add(0.0, -0.5, offset),
             position.add(0.0, -0.5, -offset),
+            position.add(offset, -0.5, offset),
+            position.add(-offset, -0.5, -offset),
+            position.add(offset, -0.5, -offset),
+            position.add(-offset, -0.5, offset),
         )
     }
 
     fun playJumpSound(player: Player, pos: Point) {
         player.playSound(Sound.sound(Key.key("entity.chicken.egg"), Sound.Source.PLAYER, 0.5f, 0.8f), pos)
     }
+
+    val modifiers = listOf(
+        Pos(-1.0, -1.0, 4.0),
+        Pos(0.0, -1.0, 4.0),
+        Pos(1.0, -1.0, 4.0),
+        Pos(-1.0, 0.0, 4.0),
+        Pos(0.0, 0.0, 4.0),
+        Pos(1.0, 0.0, 4.0),
+        Pos(-1.0, 1.0, 4.0),
+        Pos(0.0, 1.0, 4.0),
+        Pos(1.0, 1.0, 4.0),
+        Pos(0.0, 0.0, 5.0),
+        Pos(1.0, -1.0, 5.0),
+        Pos(0.0, -1.0, 5.0),
+        Pos(-1.0, -1.0, 5.0),
+        Pos(-1.0, 1.0, 3.0),
+        Pos(-2.0, 1.0, 3.0),
+        Pos(1.0, 1.0, 3.0),
+        Pos(2.0, 1.0, 3.0),
+        Pos(2.0, 0.0, 3.0),
+        Pos(-2.0, 0.0, 3.0),
+    )
 
     init {
         eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
@@ -78,7 +104,7 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
     }
 
     fun spawnNewBlock(fromPosition: Pos = blocks.last()): Pos {
-        val newPosition = fromPosition.add(listOf(-1.0, 0.0, 1.0).random(), listOf(-1.0, 0.0, 1.0).random(), 4.0)
+        val newPosition = fromPosition.add(modifiers.random())
 
         if (player.playerConnection.clientState == ConnectionState.PLAY) {
             playJumpSound(player, newPosition)
