@@ -27,11 +27,11 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
 
     val moveListener: ((PlayerMoveEvent) -> Unit) = { event: PlayerMoveEvent ->
         if (event.isOnGround) {
-            val posBelow = event.newPosition.add(0.0, -0.5, 0.0)
+            val posBelow = getBlocksBelow(event.newPosition)
 
-            if (posBelow.sameBlock(blocks[blocks.size - 2])) {
+            if (posBelow.any { it.sameBlock(blocks[blocks.size - 2]) }) {
                 blocks.add(spawnNewBlock())
-            } else if (posBelow.sameBlock(blocks.last())) {
+            } else if (posBelow.any { it.sameBlock(blocks.last()) }) {
                 blocks.add(spawnNewBlock())
                 blocks.add(spawnNewBlock())
             }
@@ -46,6 +46,18 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
                 blocks.add(spawnNewBlock())
             }
         }
+    }
+
+    fun getBlocksBelow(position: Pos): List<Pos> {
+        val offset = 0.3
+
+        return listOf(
+            position,
+            position.add(offset, -0.5, 0.0),
+            position.add(-offset, -0.5, 0.0),
+            position.add(0.0, -0.5, offset),
+            position.add(0.0, -0.5, -offset),
+        )
     }
 
     fun playJumpSound(player: Player, pos: Point) {
