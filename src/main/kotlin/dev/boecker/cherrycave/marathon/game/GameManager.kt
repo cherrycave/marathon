@@ -54,6 +54,8 @@ class GameManager(val server: MarathonServer) {
     val disconnectListener: ((PlayerDisconnectEvent) -> Unit) = { event: PlayerDisconnectEvent ->
         val player = event.player
 
+        MinecraftServer.getInstanceManager().unregisterInstance(games[player.uuid]?.instance)
+
         games[player.uuid]?.stopGame()
         games.remove(player.uuid)
     }
