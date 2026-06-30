@@ -38,6 +38,7 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
         } else {
             if (event.newPosition.blockY() < (blocks.last().y - 5)) {
                 blocks.forEach {
+                    instance.loadChunk(it.chunkX(), it.chunkZ())
                     instance.setBlock(it, Block.AIR)
                 }
                 blocks.clear()
