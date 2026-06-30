@@ -12,8 +12,12 @@ import net.minestom.server.event.EventNode
 import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.event.trait.PlayerEvent
 import net.minestom.server.instance.InstanceContainer
+import net.minestom.server.instance.batch.AbsoluteBlockBatch
+import net.minestom.server.instance.batch.BatchOption
+import net.minestom.server.instance.batch.RelativeBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.network.ConnectionState
+import net.minestom.server.network.packet.server.play.BlockChangePacket
 
 
 class MarathonGame(val server: MarathonServer, val player: Player, val instance: InstanceContainer) {
@@ -30,21 +34,25 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
             val posBelow = getBlocksBelow(event.newPosition)
 
             if (posBelow.any { it.sameBlock(blocks[blocks.size - 2]) }) {
-                blocks.add(spawnNewBlock())
+                spawnNewBlock()
             } else if (posBelow.any { it.sameBlock(blocks.last()) }) {
-                blocks.add(spawnNewBlock())
-                blocks.add(spawnNewBlock())
+                spawnNewBlock()
+                spawnNewBlock()
             }
         } else {
-            if (event.newPosition.blockY() < (blocks.last().y - 5)) {
+            if (event.newPosition.blockY() < ((blocks.lastOrNull()?.y ?: player.respawnPoint.y) - 5)) {
+                val blockBatch = AbsoluteBlockBatch(BatchOption().setSendUpdate(true))
                 blocks.forEach {
-                    instance.loadChunk(it.chunkX(), it.chunkZ())
-                    instance.setBlock(it, Block.AIR)
+                    blockBatch.setBlock(it, Block.AIR)
                 }
+                blockBatch.apply(instance) {
+
+                }
+
                 blocks.clear()
                 player.teleport(player.respawnPoint)
-                blocks.add(spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0)))
-                blocks.add(spawnNewBlock())
+                spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0))
+                spawnNewBlock()
             }
         }
     }
@@ -94,8 +102,8 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
     init {
         eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
 
-        blocks.add(spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0)))
-        blocks.add(spawnNewBlock())
+        spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0))
+        spawnNewBlock()
 
         MinecraftServer.getGlobalEventHandler().addChild(eventNode)
     }
@@ -106,6 +114,7 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
 
     fun spawnNewBlock(fromPosition: Pos = blocks.last()): Pos {
         val newPosition = fromPosition.add(modifiers.random())
+        blocks.add(newPosition)
 
         if (player.playerConnection.clientState == ConnectionState.PLAY) {
             playJumpSound(player, newPosition)
