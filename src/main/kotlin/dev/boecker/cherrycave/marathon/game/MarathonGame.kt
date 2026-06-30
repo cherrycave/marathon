@@ -11,6 +11,7 @@ import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
 import net.minestom.server.event.EventFilter
 import net.minestom.server.event.EventNode
+import net.minestom.server.event.player.PlayerLoadedEvent
 import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.event.trait.PlayerEvent
 import net.minestom.server.instance.InstanceContainer
@@ -64,6 +65,12 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
         }
     }
 
+    val joinListener: ((PlayerLoadedEvent) -> Unit) = { event: PlayerLoadedEvent ->
+        MinecraftServer.getSchedulerManager().scheduleTask({
+            player.sendActionBar(MiniMessage.miniMessage().deserialize("<white>Jumps: <blue>${blocks.size - 2}</blue>"))
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1))
+    }
+
     fun getBlocksBelow(position: Pos): List<Pos> {
         val offset = 0.5
 
@@ -108,15 +115,12 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
 
     init {
         eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
+        eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
 
         spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0))
         spawnNewBlock()
 
         MinecraftServer.getGlobalEventHandler().addChild(eventNode)
-
-        MinecraftServer.getSchedulerManager().scheduleTask({
-            player.sendActionBar(MiniMessage.miniMessage().deserialize("<white>Jumps: <blue>${blocks.size - 2}</blue>"))
-        }, TaskSchedule.tick(1), TaskSchedule.tick(1))
     }
 
     fun stopGame() {
