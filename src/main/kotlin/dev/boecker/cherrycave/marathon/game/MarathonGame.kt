@@ -3,6 +3,8 @@ package dev.boecker.cherrycave.marathon.game
 import dev.boecker.cherrycave.marathon.MarathonServer
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
@@ -18,6 +20,8 @@ import net.minestom.server.instance.batch.RelativeBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.network.ConnectionState
 import net.minestom.server.network.packet.server.play.BlockChangePacket
+import net.minestom.server.timer.Scheduler
+import net.minestom.server.timer.TaskSchedule
 
 
 class MarathonGame(val server: MarathonServer, val player: Player, val instance: InstanceContainer) {
@@ -45,12 +49,15 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
                 blocks.forEach {
                     blockBatch.setBlock(it, Block.AIR)
                 }
+                player.teleport(player.respawnPoint)
+
                 blockBatch.apply(instance) {
 
                 }
 
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<white>You reached <blue>${blocks.size - 2} <white>jumps!"))
+
                 blocks.clear()
-                player.teleport(player.respawnPoint)
                 spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0))
                 spawnNewBlock()
             }
@@ -106,6 +113,10 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
         spawnNewBlock()
 
         MinecraftServer.getGlobalEventHandler().addChild(eventNode)
+
+        MinecraftServer.getSchedulerManager().scheduleTask({
+            player.sendActionBar(MiniMessage.miniMessage().deserialize("<white>Jumps: <blue>${blocks.size - 2}</blue>"))
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1))
     }
 
     fun stopGame() {
