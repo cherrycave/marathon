@@ -115,7 +115,7 @@ class MarathonGame(val server: MarathonServer, val player: Player, val instance:
 
     init {
         eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
-        eventNode.addListener(PlayerMoveEvent::class.java, moveListener)
+        eventNode.addListener(PlayerLoadedEvent::class.java, joinListener)
 
         spawnNewBlock(player.respawnPoint.add(0.0, -0.5, 0.0))
         spawnNewBlock()
