@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2026.06.20-26.1.2")
+    implementation("net.minestom:minestom:2026.07.12-26.2")
     implementation("dev.hollowcube:polar:1.16.0")
     implementation("net.kyori:adventure-text-minimessage:5.1.1")
 
